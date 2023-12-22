@@ -1,0 +1,10 @@
+{
+    "mode":"sam_all",
+    "instances": [
+        {
+            "image": {
+                "img_path": "./example/remove-anything/dog.jpg"
+            }
+        }
+    ]
+}

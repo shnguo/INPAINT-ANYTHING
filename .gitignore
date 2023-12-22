@@ -37,3 +37,4 @@ app/assets/image_removed.png
 *.csv
 *.flist
 **/*.flist
+pretrained_models.zip
