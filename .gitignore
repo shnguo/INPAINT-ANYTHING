@@ -35,3 +35,5 @@ app/assets/image_removed.png
 *.jpg
 *.jpeg
 *.csv
+*.flist
+**/*.flist
