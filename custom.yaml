@@ -1,0 +1,37 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: aigc-inpaiting-anything
+spec:
+  predictor:
+    scaleTarget: 2
+    scaleMetric: concurrency
+    # containerConcurrency: 3
+    minReplicas: 1
+    maxReplicas: 3
+    # schedulerName: volcano
+    nodeSelector:
+        "kubernetes.io/hostname": "dl-poweredge-r740"
+    containers:
+      - name: kserve-container
+        image: registry.cn-shanghai.aliyuncs.com/shnguo/inpainting-anything:v1
+        # image: shnguo/custom-model:v2
+        # imagePullPolicy: Never
+        command: ["python", "api_server.py"]
+        volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        resources:
+          limits:
+            cpu: "5"
+            memory: "16Gi"
+        env:
+            - name: AIGC_version
+              value: "20231222_v1.6"
+
+          
+    volumes:
+    - name: workspace
+      persistentVolumeClaim:
+        claimName: nfs-pvc-inpainting
+
