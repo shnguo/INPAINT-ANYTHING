@@ -1,0 +1,50 @@
+# apiVersion: apps.kruise.io/v1alpha1
+# kind: CloneSet
+# metadata:
+#   name: gpu-pod
+# spec:
+#   # schedulerName: volcano
+#   replicas: 2 # 期望的 Pod 副本数量，默认值为1
+#   selector: # Label Selector，必须匹配 Pod 模板中的标签
+#     matchLabels:
+#       app: gpu-pod
+#   # nodeSelector:
+#   #   "kubernetes.io/hostname": "dl-poweredge-r740"
+#   template: # Pod 模板
+#     metadata:
+#       labels:
+#         app: gpu-pod
+#     spec:
+#       containers:
+#         - name: ubuntu-container
+#           image: nvcr.io/nvidia/k8s/cuda-sample:vectoradd-cuda10.2
+#           command: ["bash", "-c", "sleep 86400"]
+#           resources:
+#             limits:
+#               aliyun.com/gpu-count: 1
+
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: helloworld-go
+  namespace: default
+spec:
+  template:
+    spec:
+      schedulerName: volcano
+      nodeSelector:
+        "kubernetes.io/hostname": "dl-poweredge-r740"
+      containers:
+        - image: shnguo/custom-model:v2
+          command: ["bash", "-c", "sleep 86400"]
+          ports:
+            - containerPort: 8080
+          env:
+            - name: TARGET
+              value: "Go Sample v1"
+          resources:
+            limits:
+              cpu: "5"
+              # volcano.sh/gpu-memory: 4094
+              # volcano.sh/gpu-number:   0

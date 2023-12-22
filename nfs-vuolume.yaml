@@ -1,0 +1,27 @@
+# nfs-volume.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv-inpainting
+spec:
+  storageClassName: nfs
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    path: /algo/gs/Inpaint-Anything # 指定nfs的挂载点
+    server: 192.168.0.190 # 指定nfs服务地址
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nfs-pvc-inpainting
+spec:
+  storageClassName: nfs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
