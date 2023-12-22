@@ -29,3 +29,9 @@ torch-enhanced.tar
 *.mp4
 *.pdf
 *.pt
+app/assets/image_removed.png
+*.png
+*.gif
+*.jpg
+*.jpeg
+*.csv
