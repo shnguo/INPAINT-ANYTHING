@@ -165,12 +165,13 @@ class Inpaiting_Anything(Model):
         masks = masks.astype(np.uint8) * 255
         masks = [dilate_mask(mask, 15) for mask in masks]
         result = {'mask_base64':[],'img_base64':[]}
+        px = 1/plt.rcParams['figure.dpi']
         for idx, mask in enumerate(masks):
             mask_base64 = img_2_base64(Image.fromarray(mask.astype(np.uint8)))
             result['mask_base64'].append(mask_base64)    
             dpi = plt.rcParams['figure.dpi']
             height, width = image.shape[:2]
-            plt.figure(figsize=(width/dpi/0.77, height/dpi/0.77))
+            plt.figure(figsize=(width*px, height*px))
             plt.imshow(image)
             plt.axis('off')
             show_points(plt.gca(), point_coords, point_labels,
