@@ -127,8 +127,10 @@ class Inpaiting_Anything(Model):
             final_mask  = final_mask+mask['segmentation']*(i+1)
         my_base64_pngData = self.get_plt_base64()
         plt.close()
-        print(final_mask)
-        return {'final_mask':final_mask.tolist(),'img_base64':my_base64_pngData}
+        # print(final_mask)
+        return {'final_mask':final_mask.tolist(),
+                # 'img_base64':my_base64_pngData
+                }
     
     def fastsam_all_solver(self,payload,headers):
         image = self.ori_img_input(payload)
@@ -145,7 +147,7 @@ class Inpaiting_Anything(Model):
 
     def get_plt_base64(self):
         my_stringIObytes = io.BytesIO()
-        plt.savefig(my_stringIObytes, format='png')
+        plt.savefig(my_stringIObytes, format='png',bbox_inches='tight',pad_inches = 0)
         my_stringIObytes.seek(0)
         my_base64_pngData = base64.b64encode(my_stringIObytes.read())
         return my_base64_pngData
@@ -173,7 +175,7 @@ class Inpaiting_Anything(Model):
             height, width = image.shape[:2]
             plt.figure(figsize=(width*px, height*px))
             plt.imshow(image)
-            plt.axis('off')
+            plt.axis('off')       
             show_points(plt.gca(), point_coords, point_labels,
                     size=(width*0.04)**2/2)
             show_mask(plt.gca(), mask, random_color=False)

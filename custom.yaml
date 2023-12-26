@@ -27,7 +27,13 @@ spec:
             memory: "16Gi"
         env:
             - name: AIGC_version
-              value: "20231222_v1.6"
+              value: "20231226_v1.6"
+        readinessProbe:
+          httpGet:
+            path: /v1/models/aigc_inpaiting_anything
+        livenessProbe:
+          httpGet:
+            path: /v1/models/aigc_inpaiting_anything
 
           
     volumes:
