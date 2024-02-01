@@ -4,11 +4,11 @@ metadata:
   name: aigc-inpaiting-anything
 spec:
   predictor:
-    scaleTarget: 2
+    scaleTarget: 3
     scaleMetric: concurrency
     # containerConcurrency: 3
     minReplicas: 1
-    maxReplicas: 3
+    maxReplicas: 1
     # schedulerName: volcano
     nodeSelector:
         "kubernetes.io/hostname": "dl-poweredge-r740"
@@ -25,15 +25,21 @@ spec:
           limits:
             cpu: "5"
             memory: "16Gi"
+            # volcano.sh/gpu-memory: 40000
         env:
             - name: AIGC_version
-              value: "20231226_v1.6"
+              value: "20240117_v1.0"
         readinessProbe:
           httpGet:
             path: /v1/models/aigc_inpaiting_anything
+          failureThreshold: 5
+          periodSeconds: 60
         livenessProbe:
           httpGet:
             path: /v1/models/aigc_inpaiting_anything
+          failureThreshold: 5
+          periodSeconds: 60
+          initialDelaySeconds: 300
 
           
     volumes:

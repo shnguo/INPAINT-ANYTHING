@@ -5,7 +5,7 @@ import argparse
 from segment_anything import SamPredictor, sam_model_registry,SamAutomaticMaskGenerator
 import torch
 import cv2
-from utils import show_anns,img_2_base64,dilate_mask,save_array_to_img,show_points,show_mask
+from utils import show_anns,img_2_base64,dilate_mask,save_array_to_img,show_points,show_mask,exif_transpose
 import matplotlib.pyplot as plt
 import io
 import base64
@@ -36,7 +36,7 @@ class Inpaiting_Anything(Model):
         }
        self.load_sam()
        self.load_lama()
-       self.load_fastsam()
+    #    self.load_fastsam()
        self.ready = True
 
     def load_sam(self):
@@ -91,6 +91,7 @@ class Inpaiting_Anything(Model):
             img_data = payload["instances"][0]["image"]["img_base64"]
             raw_img_data = base64.b64decode(img_data)
             pil_image = Image.open(io.BytesIO(raw_img_data)).convert('RGB')
+            pil_image = exif_transpose(pil_image)
             pil_image.save('results/tmp.png')
             image = numpy.array(pil_image)
             # Convert RGB to BGR
@@ -128,6 +129,7 @@ class Inpaiting_Anything(Model):
         my_base64_pngData = self.get_plt_base64()
         plt.close()
         # print(final_mask)
+        torch.cuda.empty_cache()
         return {'final_mask':final_mask.tolist(),
                 # 'img_base64':my_base64_pngData
                 }
@@ -141,6 +143,7 @@ class Inpaiting_Anything(Model):
         ann_array = ann.detach().cpu().numpy()
         for i , mask in enumerate(ann_array):
             final_mask  = final_mask+mask*(i+1)
+        torch.cuda.empty_cache()
         return {'final_mask':final_mask.tolist()}
 
 
@@ -158,6 +161,7 @@ class Inpaiting_Anything(Model):
         image = self.ori_img_input(payload)
         point_coords =  np.array(payload["instances"][0]['point_coords'])
         point_labels = np.array(payload["instances"][0]['point_labels'])
+        dilate = payload["instances"][0].get('dilate',15)
         self.sam_predictor.set_image(image)
         masks, scores, logits = self.sam_predictor.predict(
         point_coords=point_coords,
@@ -165,7 +169,7 @@ class Inpaiting_Anything(Model):
         multimask_output=True,
     )   
         masks = masks.astype(np.uint8) * 255
-        masks = [dilate_mask(mask, 15) for mask in masks]
+        masks = [dilate_mask(mask, dilate) for mask in masks]
         result = {'mask_base64':[],'img_base64':[]}
         px = 1/plt.rcParams['figure.dpi']
         for idx, mask in enumerate(masks):
@@ -177,12 +181,12 @@ class Inpaiting_Anything(Model):
             plt.imshow(image)
             plt.axis('off')       
             show_points(plt.gca(), point_coords, point_labels,
-                    size=(width*0.04)**2/2)
+                    size=(width*0.01)**2/2)
             show_mask(plt.gca(), mask, random_color=False)
             img_base64 = self.get_plt_base64()
             result['img_base64'].append(img_base64)
             plt.close()
-
+        torch.cuda.empty_cache()
         return result
     
     @torch.no_grad()
@@ -216,6 +220,7 @@ class Inpaiting_Anything(Model):
         result_img = Image.fromarray(cur_res.astype(np.uint8))
         result_img.save('results/result_img.png')
         img_base64 = img_2_base64(result_img)
+        torch.cuda.empty_cache()
         return {'img_base64':img_base64}
 
 
